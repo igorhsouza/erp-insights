@@ -1,38 +1,71 @@
-# ERP Intelligence Bot
+<h1 align="center">⚡ ERP Intelligence Bot ⚡</h1>
 
-Automação desenvolvida em n8n para geração e distribuição de relatórios comerciais diários a partir de dados do ERP, com envio automatizado via Telegram e e-mail.
+<p align="center">
+<img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&size=22&pause=1000&color=8A2BE2&center=true&vCenter=true&width=700&lines=ERP+Data+Automation;Commercial+Intelligence+System;Daily+Business+Insights;Built+with+n8n+%2B+LLMs" />
+</p>
 
-## Arquitetura do Workflow
+<p align="center">
+<img src="https://img.shields.io/badge/n8n-Automation-111111?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/ERP-Data-8A2BE2?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/Telegram-Delivery-111111?style=for-the-badge"/>
+<img src="https://img.shields.io/badge/AI-Insights-8A2BE2?style=for-the-badge"/>
+</p>
 
-<img width="1117" height="353" alt="workflow" src="https://github.com/user-attachments/assets/4e3d8c3c-7d14-4ed2-bed7-3256f9519b1a" />
+---
 
-## Resultados Diários
-<img width="290" height="407" alt="exm 1" src="https://github.com/user-attachments/assets/4777b432-0f99-439e-83cd-7a8389e32ade" />   
+## Overview
 
-## Resultados Diários
-<img width="252" height="343" alt="exm 2" src="https://github.com/user-attachments/assets/c004011e-96af-4ca2-b796-df9bcc10abe3" />  
+Sistema de automação para geração e distribuição de relatórios comerciais diários a partir de dados do ERP.
 
-## Resultados Diários
-<img width="220" height="209" alt="exm 3" src="https://github.com/user-attachments/assets/44b3a346-9bf8-45a6-b3a1-06888fc484ba" />
+O foco é transformar dados brutos em informação útil para tomada de decisão.
 
-## Objetivo
+---
 
-Transformar dados brutos do ERP em insights acionáveis, reduzindo análise manual e permitindo decisões mais rápidas e assertivas na operação do varejo.
+## Impact
 
-## Impacto
+- redução de ~20h/mês de análise manual  
+- entrega diária automatizada de indicadores  
+- identificação contínua de prejuízos e oportunidades  
+- padronização da informação para gestão  
 
-- Redução de ~20 horas/mês de análise manual
-- Entrega diária automatizada de indicadores comerciais
-- Identificação contínua de prejuízos, margens baixas e oportunidades
-- Padronização da informação para a gestão
+---
 
-## Funcionamento
+## Architecture
 
-O workflow executa diariamente, consulta endpoints da API do ERP, processa os dados e distribui relatórios estruturados.
+<p align="center">
+<img width="1117" height="353" src="https://github.com/user-attachments/assets/4e3d8c3c-7d14-4ed2-bed7-3256f9519b1a" />
+</p>
 
-Fluxo principal:
+---
 
-```text
+## Output (Telegram)
+
+<p align="center">
+<img width="290" src="https://github.com/user-attachments/assets/4777b432-0f99-439e-83cd-7a8389e32ade" />
+<img width="252" src="https://github.com/user-attachments/assets/c004011e-96af-4ca2-b796-df9bcc10abe3" />
+<img width="220" src="https://github.com/user-attachments/assets/44b3a346-9bf8-45a6-b3a1-06888fc484ba" />
+</p>
+
+---
+
+## Stack
+
+- n8n  
+- ERP API  
+- Telegram  
+- OpenAI  
+
+---
+
+## Flow
+
+Schedule Trigger → Data Fetch → Processing → Analysis → AI Summary → Delivery
+
+
+---
+
+## Detailed Flow
+
 Schedule Trigger
 → HTTP Request /resumo-completo
 → Code - Montar Mensagem
@@ -46,3 +79,20 @@ Schedule Trigger
 → Code - Relatório HTML
 → Gmail - Envio por e-mail
 → Telegram - Confirmação
+
+
+---
+
+## Notes
+
+A lógica principal não depende de IA.
+
+IA é utilizada apenas para organizar e resumir os dados,  
+enquanto a análise crítica é baseada em regras de negócio.
+
+---
+
+## Author
+
+Igor Henrique  
+Automation • Data • Systems
