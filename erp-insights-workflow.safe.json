@@ -1,0 +1,393 @@
+{
+  "name": "ERP Insights Bot - Telegram (Safe Template)",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst brl = new Intl.NumberFormat('pt-BR', {\n  style: 'currency',\n  currency: 'BRL'\n});\n\nfunction clean(text) {\n  return String(text || '')\n    .replace(/[<>{}`*_#\\[\\]\\(\\)]/g, '')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n}\n\nfunction fmtDate(value) {\n  if (!value) return 'sem data';\n  return new Date(value).toLocaleDateString('pt-BR');\n}\n\nfunction formatMeios(meios) {\n  if (!meios || meios.length === 0) return 'Sem dados';\n\n  return meios.map(item =>\n    `• ${clean(item.DESCRICAO)}: ${brl.format(Number(item.VALOR || 0))}`\n  ).join('\\n');\n}\n\nfunction formatTop(top) {\n  if (!top || top.length === 0) return 'Sem dados';\n\n  return top.map((item, i) =>\n    `${i + 1}. ${clean(item.DES_PRODUTO)} (${Number(item.QTD_VENDIDA || 0)})`\n  ).join('\\n');\n}\n\nfunction loja(loja) {\n  return `\n🏬 Loja ${loja.COD_LOJA}\n💰 ${brl.format(Number(loja.FATURAMENTO || 0))}\n🧾 ${Number(loja.QTD_CUPONS || 0)} cupons\n🎟️ ${brl.format(Number(loja.TICKET_MEDIO || 0))}\n\n💳 Pagamentos:\n${formatMeios(loja.MEIOS_PAGAMENTO)}\n\n🔥 Top 5:\n${formatTop(loja.TOP_5_PRODUTOS)}\n`;\n}\n\nconst mensagem = clean(`\n📊 Resumo do Dia\n📅 ${fmtDate(data.DATA)}\n\n${loja(data.LOJA_1)}\n\n${loja(data.LOJA_2)}\n\n🧮 Total Geral: ${brl.format(Number(data.TOTAL_DIA.FATURAMENTO_TOTAL_DIA || 0))}\n`);\n\nreturn [{ json: { mensagem } }];"
+      },
+      "name": "Code - Montar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "@YOUR_TELEGRAM_CHANNEL",
+        "text": "={{ $json.mensagem }}",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Telegram - Enviar Resumo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_API_URL/resumo-completo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        -32
+      ],
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_API_URL/analise-comercial",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1584,
+        -32
+      ],
+      "name": "Análise Comercial"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst brl = new Intl.NumberFormat('pt-BR', {\n  style: 'currency',\n  currency: 'BRL'\n});\n\nfunction clean(text) {\n  return String(text || '').replace(/[<>`*_#\\[\\]\\(\\)]/g, '').trim();\n}\n\nfunction formatSetores(loja) {\n  if (!loja.SETORES || loja.SETORES.length === 0) {\n    return 'Sem dados';\n  }\n\n  return loja.SETORES.slice(0, 5).map((item, index) => {\n    return `${index + 1}. ${clean(item.DES_SECAO)}\n💰 Faturamento: ${brl.format(Number(item.FATURAMENTO || 0))}\n💵 Lucro: ${brl.format(Number(item.LUCRO_BRUTO || 0))}\n📈 Margem: ${Number(item.MARGEM_PERC || 0)}%`;\n  }).join('\\n\\n');\n}\n\nconst mensagem = [\n  `Analise comercial do dia`,\n  `Data: ${data.DATA}`,\n  ``,\n  `Loja 1`,\n  formatSetores(data.LOJA_1),\n  ``,\n  `Loja 2`,\n  formatSetores(data.LOJA_2)\n].join('\\n');\n\nreturn [{ json: { mensagem } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -32
+      ],
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "@YOUR_TELEGRAM_CHANNEL",
+        "text": "={{ $json.mensagem }}",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Telegram - Enviar Resumo1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_API_URL/analise-abc",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        912,
+        208
+      ],
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "chatId": "@YOUR_TELEGRAM_CHANNEL",
+        "text": "=Relatório diário enviado por email.",
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "name": "Telegram - Enviar Resumo2",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2160,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\n\nconst brl = new Intl.NumberFormat('pt-BR', {\n  style: 'currency',\n  currency: 'BRL'\n});\n\nfunction clean(text) {\n  return String(text || '')\n    .replace(/[<>`*_#\\[\\]\\(\\)]/g, '')\n    .trim();\n}\n\nfunction formatLoja(loja) {\n  if (!loja || !loja.TOP_10) {\n    return 'Sem dados';\n  }\n\n  const top = loja.TOP_10.slice(0, 5).map((item, i) => {\n    return `${i + 1}. ${clean(item.DES_PRODUTO)}\n💰 ${brl.format(Number(item.FATURAMENTO || 0))}\n📈 Margem: ${Number(item.MARGEM_PERC || 0)}%\n🏷️ Curva ${item.CURVA_ABC}`;\n  }).join('\\n\\n');\n\n  const alertas = loja.TOP_10\n    .filter(x => Number(x.MARGEM_PERC || 0) < 15)\n    .slice(0, 3)\n    .map(x => `• ${clean(x.DES_PRODUTO)} (${Number(x.MARGEM_PERC || 0)}%)`)\n    .join('\\n');\n\n  return `🏬 Loja ${loja.COD_LOJA}\n💰 Faturamento: ${brl.format(Number(loja.FATURAMENTO_TOTAL || 0))}\n📦 Itens analisados: ${Number(loja.QTD_ITENS_ANALISADOS || 0)}\n\n🔥 Top Produtos:\n${top}\n\n⚠️ Margens Baixas:\n${alertas || 'Nenhum alerta relevante'}`;\n}\n\nconst mensagem = `📊 RELATÓRIO CURVA ABC\n📅 ${data.DATA || 'Ontem'}\n\n${formatLoja(data.LOJA_1)}\n\n${formatLoja(data.LOJA_2)}\n\n🤖 Relatório automático`;\n\nreturn [{ json: { mensagem } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        208
+      ],
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Você é um consultor de varejo.\n\nEscreva apenas um resumo executivo curto, em português brasileiro, com no máximo 700 caracteres.\n\nQuero:\n- 1 visão geral\n- 1 alerta principal da loja 1\n- 1 alerta principal da loja 2\n- 1 oportunidade principal\n- 1 conclusão final\n\nSem markdown.\nSem HTML.\nSem listas longas.\nSem repetir números demais.\n\nDados:\n{{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1360,
+        208
+      ],
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        384
+      ],
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "jsCode": "const abc = $items(\"HTTP Request1\")[0].json; \nconst ia =\n  $json.message?.content ||\n  $json.content ||\n  $json.output ||\n  $json.text ||\n  'Sem resumo gerado.';\n\nconst brl = new Intl.NumberFormat('pt-BR', {\n  style: 'currency',\n  currency: 'BRL'\n});\n\nfunction clean(text) {\n  return String(text || '')\n    .replace(/[<>]/g, '')\n    .trim();\n}\n\nfunction escapeHtml(text) {\n  return String(text || '')\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#039;');\n}\n\nfunction formatDate(value) {\n  if (!value) return 'Sem data';\n  return new Date(value).toLocaleDateString('pt-BR');\n}\n\nfunction badge(curva) {\n  const map = {\n    A: { bg: '#dcfce7', color: '#166534' },\n    B: { bg: '#fef3c7', color: '#92400e' },\n    C: { bg: '#fee2e2', color: '#991b1b' }\n  };\n  const c = map[curva] || { bg: '#e5e7eb', color: '#374151' };\n  return `<span style=\"display:inline-block;padding:4px 10px;border-radius:999px;background:${c.bg};color:${c.color};font-size:12px;font-weight:700;\">Curva ${curva}</span>`;\n}\n\nfunction topTable(loja) {\n  const itens = loja?.TOP_10?.slice(0, 5) || [];\n  if (!itens.length) {\n    return `<div style=\"font-size:13px;color:#6b7280;\">Sem dados</div>`;\n  }\n\n  const rows = itens.map((item, i) => `\n    <tr>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;\">${i + 1}</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;font-weight:600;\">${escapeHtml(clean(item.DES_PRODUTO))}</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;\">${escapeHtml(clean(item.DES_SECAO))}</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;text-align:right;\">${Number(item.QTD_VENDIDA || 0).toFixed(2)}</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;text-align:right;\">${brl.format(Number(item.FATURAMENTO || 0))}</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;text-align:right;\">${Number(item.MARGEM_PERC || 0)}%</td>\n      <td style=\"padding:10px;border-bottom:1px solid #e5e7eb;font-size:13px;\">${badge(item.CURVA_ABC)}</td>\n    </tr>\n  `).join('');\n\n  return `\n    <table style=\"width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;\">\n      <thead>\n        <tr style=\"background:#f9fafb;\">\n          <th style=\"padding:10px;text-align:left;font-size:12px;color:#6b7280;\">#</th>\n          <th style=\"padding:10px;text-align:left;font-size:12px;color:#6b7280;\">Produto</th>\n          <th style=\"padding:10px;text-align:left;font-size:12px;color:#6b7280;\">Setor</th>\n          <th style=\"padding:10px;text-align:right;font-size:12px;color:#6b7280;\">Qtd</th>\n          <th style=\"padding:10px;text-align:right;font-size:12px;color:#6b7280;\">Fat.</th>\n          <th style=\"padding:10px;text-align:right;font-size:12px;color:#6b7280;\">Margem</th>\n          <th style=\"padding:10px;text-align:left;font-size:12px;color:#6b7280;\">ABC</th>\n        </tr>\n      </thead>\n      <tbody>${rows}</tbody>\n    </table>\n  `;\n}\n\nfunction resumoCurva(loja) {\n  const r = loja?.RESUMO_CURVA || {};\n  const a = r.A || {};\n  const b = r.B || {};\n  const c = r.C || {};\n\n  return `\n    <table style=\"width:100%;border-collapse:collapse;\">\n      <tr>\n        <td style=\"padding:8px 0;font-size:13px;\">${badge('A')}</td>\n        <td style=\"padding:8px 0;font-size:13px;\">${a.QTD || 0} itens</td>\n        <td style=\"padding:8px 0;font-size:13px;text-align:right;\">${brl.format(Number(a.FATURAMENTO || 0))}</td>\n      </tr>\n      <tr>\n        <td style=\"padding:8px 0;font-size:13px;\">${badge('B')}</td>\n        <td style=\"padding:8px 0;font-size:13px;\">${b.QTD || 0} itens</td>\n        <td style=\"padding:8px 0;font-size:13px;text-align:right;\">${brl.format(Number(b.FATURAMENTO || 0))}</td>\n      </tr>\n      <tr>\n        <td style=\"padding:8px 0;font-size:13px;\">${badge('C')}</td>\n        <td style=\"padding:8px 0;font-size:13px;\">${c.QTD || 0} itens</td>\n        <td style=\"padding:8px 0;font-size:13px;text-align:right;\">${brl.format(Number(c.FATURAMENTO || 0))}</td>\n      </tr>\n    </table>\n  `;\n}\n\nfunction alertList(loja) {\n  const itens = loja?.TOP_10?.filter(x => Number(x.MARGEM_PERC || 0) < 15).slice(0, 3) || [];\n  if (!itens.length) return `<li>Nenhum alerta crítico no top 10.</li>`;\n  return itens.map(x => `<li>${escapeHtml(clean(x.DES_PRODUTO))} — margem ${Number(x.MARGEM_PERC || 0)}%</li>`).join('');\n}\n\nfunction lojaCard(loja, titulo) {\n  return `\n    <div style=\"background:#ffffff;border-radius:16px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px;\">\n      <div style=\"font-size:22px;font-weight:700;color:#111827;margin-bottom:14px;\">${titulo}</div>\n\n      <div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;\">\n        <div style=\"background:#eff6ff;border-radius:12px;padding:14px;\">\n          <div style=\"font-size:12px;color:#6b7280;\">Faturamento</div>\n          <div style=\"font-size:20px;font-weight:700;color:#1d4ed8;\">${brl.format(Number(loja.FATURAMENTO_TOTAL || 0))}</div>\n        </div>\n        <div style=\"background:#f0fdf4;border-radius:12px;padding:14px;\">\n          <div style=\"font-size:12px;color:#6b7280;\">Itens analisados</div>\n          <div style=\"font-size:20px;font-weight:700;color:#15803d;\">${Number(loja.QTD_ITENS_ANALISADOS || 0)}</div>\n        </div>\n        <div style=\"background:#fff7ed;border-radius:12px;padding:14px;\">\n          <div style=\"font-size:12px;color:#6b7280;\">Data</div>\n          <div style=\"font-size:18px;font-weight:700;color:#c2410c;\">${formatDate(loja.DATA)}</div>\n        </div>\n      </div>\n\n      <div style=\"display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;\">\n        <div style=\"background:#f9fafb;border-radius:12px;padding:16px;\">\n          <div style=\"font-size:16px;font-weight:700;color:#111827;margin-bottom:10px;\">Resumo da Curva</div>\n          ${resumoCurva(loja)}\n        </div>\n\n        <div style=\"background:#f9fafb;border-radius:12px;padding:16px;\">\n          <div style=\"font-size:16px;font-weight:700;color:#111827;margin-bottom:10px;\">Alertas rápidos</div>\n          <ul style=\"margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#374151;\">\n            ${alertList(loja)}\n          </ul>\n        </div>\n      </div>\n\n      <div style=\"font-size:16px;font-weight:700;color:#111827;margin-bottom:10px;\">Top 5 Produtos</div>\n      ${topTable(loja)}\n    </div>\n  `;\n}\n\nconst html = `\n<!DOCTYPE html>\n<html lang=\"pt-BR\">\n<head>\n<meta charset=\"UTF-8\">\n<title>Relatório ABC Diário</title>\n</head>\n<body style=\"margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#111827;\">\n  <div style=\"max-width:1100px;margin:0 auto;padding:24px;\">\n    \n    <div style=\"background:linear-gradient(135deg,#111827,#1f2937);color:#fff;border-radius:20px;padding:28px 32px;margin-bottom:20px;\">\n      <div style=\"font-size:14px;opacity:.8;\">Relatório Comercial Automatizado</div>\n      <div style=\"font-size:32px;font-weight:800;margin-top:8px;\">📊 Curva ABC e Insights</div>\n      <div style=\"font-size:15px;opacity:.9;margin-top:8px;\">Referência: ${formatDate(abc.DATA)}</div>\n    </div>\n\n    <div style=\"background:#ffffff;border-radius:16px;padding:22px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:20px;\">\n      <div style=\"font-size:22px;font-weight:700;margin-bottom:12px;\">📌 Resumo Executivo</div>\n      <div style=\"font-size:15px;line-height:1.8;color:#374151;\">\n        ${escapeHtml(ia).replace(/\\n/g, '<br>')}\n      </div>\n    </div>\n\n    ${lojaCard(abc.LOJA_1, '🏬 Loja 1')}\n    ${lojaCard(abc.LOJA_2, '🏬 Loja 2')}\n\n    <div style=\"text-align:center;font-size:12px;color:#6b7280;padding:8px 0;\">\n      Relatório enviado automaticamente pelo pipeline de inteligência comercial.\n    </div>\n  </div>\n</body>\n</html>\n`;\n\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        208
+      ],
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@example.com",
+        "subject": "=📊 Relatório ABC Diário - {{$now.format('dd/MM/yyyy')}}",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1984,
+        208
+      ],
+      "name": "Send a message"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 21,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        672,
+        -32
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code - Montar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Enviar Resumo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code - Montar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Enviar Resumo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Análise Comercial": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Enviar Resumo": {
+      "main": [
+        [
+          {
+            "node": "Análise Comercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Enviar Resumo2": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Enviar Resumo2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Enviar Resumo1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "tags": [
+    "portfolio",
+    "template",
+    "sanitized"
+  ]
+}
